@@ -478,6 +478,10 @@ int avrisp() {
         Serial.print("AVR ISP");
         Serial.print((char) STK_OK);
       }
+      else {
+        error++;
+        Serial.print((char) STK_NOSYNC);
+      }
       break;
     case 'A':
       get_version(getch());
@@ -537,14 +541,14 @@ int avrisp() {
       read_signature();
       break;
 
-      // expecting a command, not CRC_EOP
-      // this is how we can get back in sync
+    // expecting a command, not CRC_EOP
+    // this is how we can get back in sync
     case CRC_EOP:
       error++;
       Serial.print((char) STK_NOSYNC);
       break;
 
-      // anything else we will return STK_UNKNOWN
+    // anything else we will return STK_UNKNOWN
     default:
       error++;
       if (CRC_EOP == getch())
@@ -553,6 +557,4 @@ int avrisp() {
         Serial.print((char)STK_NOSYNC);
   }
 }
-
-
 
