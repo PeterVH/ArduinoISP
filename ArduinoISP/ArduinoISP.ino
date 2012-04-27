@@ -45,11 +45,23 @@
 
 #include "SPI.h"
 #include "pins_arduino.h"
+
+#if defined(__AVR_ATmega644P__)
+#define SANGUINO
+#endif
+
 #define RESET     SS
 
+#ifndef SANGUINO
 #define LED_HB    9
 #define LED_ERR   8
 #define LED_PMODE 7
+#else
+#define LED_HB     3
+#define LED_ERR   23
+#define LED_PMODE 22
+#endif
+
 #define PROG_FLICKER true
 
 #define HWVER 2
