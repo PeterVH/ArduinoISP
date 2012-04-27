@@ -64,6 +64,22 @@
 
 #define PROG_FLICKER true
 
+#define TRACES
+
+#if defined(UBRR1H) and defined(TRACES)
+#define TRACE_BEGIN(baud) Serial1.begin(baud)
+#define TRACE(x) Serial1.print(x)
+#define TRACELN(x) Serial1.println(x)
+#define TRACE2(x, format) Serial1.print(x, format)
+#define TRACE2LN(x, format) Serial1.println(x, format)
+#else
+#define TRACE_BEGIN(baud)
+#define TRACE(x)
+#define TRACELN(x)
+#define TRACE2(x, format)
+#define TRACE2LN(x, format)
+#endif
+
 #define HWVER 2
 #define SWMAJ 1
 #define SWMIN 18
@@ -91,6 +107,7 @@ void setup() {
   pinMode(LED_HB, OUTPUT);
   pulse(LED_HB, 2);
   
+  TRACE_BEGIN(57600);
 }
 
 int error=0;
@@ -153,7 +170,9 @@ uint8_t getch() {
 void fill(int n) {
   for (int x = 0; x < n; x++) {
     buff[x] = getch();
+    TRACE2(buff[x], HEX);TRACE(" ");
   }
+  TRACELN("");
 }
 
 #define PTIME 30
@@ -197,6 +216,7 @@ void breply(uint8_t b) {
     Serial.print((char)STK_INSYNC);
     Serial.print((char)b);
     Serial.print((char)STK_OK);
+    TRACE("< "); TRACE2LN(b, HEX);
   } 
   else {
     error++;
@@ -246,6 +266,11 @@ void set_parameters() {
     + buff[18] * 0x00000100
     + buff[19];
 
+  TRACE("devicecode="); 
+  TRACE2LN(buff[0], HEX);
+
+  TRACE("pagesize="); TRACE(param.pagesize);
+  TRACE("flashsize="); TRACE(param.flashsize);
 }
 
 void start_pmode() {
@@ -421,6 +446,7 @@ void read_page() {
   char result = (char)STK_FAILED;
   int length = 256 * getch();
   length += getch();
+  TRACE("l="); TRACELN(length);
   char memtype = getch();
   if (CRC_EOP != getch()) {
     error++;
@@ -458,6 +484,9 @@ void read_signature() {
 int avrisp() { 
   uint8_t data, low, high;
   uint8_t ch = getch();
+  TRACE("> ");  
+  TRACELN((char) ch);
+  
   switch (ch) {
   case '0': // signon
     error = 0;
@@ -497,6 +526,7 @@ int avrisp() {
   case 'U': // set address (word)
     here = getch();
     here += 256 * getch();
+    TRACE2LN(here, HEX);
     empty_reply();
     break;
 
@@ -510,7 +540,7 @@ int avrisp() {
     empty_reply();
     break;
 
-  case 0x64: //STK_PROG_PAGE
+  case 0x64: //STK_PROG_PAGE, 'd'
     program_page();
     break;
 
