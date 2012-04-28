@@ -56,10 +56,12 @@
 #define LED_HB    9
 #define LED_ERR   8
 #define LED_PMODE 7
+#define RESET_LP  6
 #else
 #define LED_HB     3
 #define LED_ERR   23
 #define LED_PMODE 22
+#define RESET_LP   1
 #endif
 
 #define PROG_FLICKER true
@@ -116,6 +118,9 @@ void setup() {
   pulse(LED_ERR, 2);
   pinMode(LED_HB, OUTPUT);
   pulse(LED_HB, 2);
+  
+  pinMode(RESET_LP, OUTPUT);
+  digitalWrite(RESET_LP, LOW);
   
   TRACE_BEGIN(57600);
 }
@@ -280,9 +285,9 @@ void set_parameters() {
   TRACE("flashsize="); TRACE(param.flashsize);
 
   TRACE("devicecode="); 
-  TRACE2LN(buff[0], HEX);
+  TRACE2LN(param.devicecode, HEX);
 
-  if(1) {
+  if(param.devicecode < 0xE0) {
     start_pmode = avr_start_pmode;
     universal = avr_universal;
     flash_read_page = avr_flash_read_page;
@@ -290,6 +295,14 @@ void set_parameters() {
     read_signature = avr_read_signature;
     eeprom_read_page = avr_eeprom_read_page;
     write_eeprom_chunk = avr_write_eeprom_chunk;
+  } else {
+    start_pmode = at89_start_pmode;
+    universal = at89_universal;
+    flash_read_page = at89_flash_read_page;
+    write_flash_pages = at89_write_flash_pages;
+    read_signature = at89_read_signature;
+    eeprom_read_page = at89_eeprom_read_page;
+    write_eeprom_chunk = at89_write_eeprom_chunk;
   }
 }
 
