@@ -96,14 +96,13 @@ const unsigned char fuses[] =
 unsigned char buf[1];
 
 void setup() {
-  Serial.begin(57600);
+  Serial.begin(115200);
   
   const unsigned char* p = SPI.dump();
   Serial.println(p[0], HEX);
   Serial.println(p[1], HEX);
   Serial.println(p[2], HEX);
   Serial.println(p[3], HEX);
-
   // datasheet ch. 23.5.5
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
