@@ -18,7 +18,7 @@
 #include <SPI.h>
 
 #ifndef SANGUINO
-#define RESET_LP 6
+#define RESET_LP 10
 #define LED_PMODE 7
 #else
 #define RESET_LP 1
@@ -26,7 +26,7 @@
 #endif
 
 
-const int chipSelectPin = SS;
+const int chipSelectPin = 6;
 const int ledPModePin = LED_PMODE;
 const int targetResetPin = RESET_LP;
 
