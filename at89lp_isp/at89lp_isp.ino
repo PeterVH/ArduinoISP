@@ -176,6 +176,7 @@ void loop() {
       default: 
         Serial.println("Signature....");
         lp_isp_read(READ_ATMEL_SIGNATURE, 0, 0, 3);  
+        Serial.println("");
         Serial.println("Fuses...");
         lp_isp_read(READ_USER_FUSES, 0, 0, 19);
         /*
@@ -192,6 +193,9 @@ void enter_programming_mode() {
   Serial.println("enter programming mode");
   programming_mode = 1;
   
+  // reset target
+  digitalWrite(targetResetPin, HIGH);
+
   // keep slave select high,  
   // it will be pulled low during each spi transfer 
   pinMode(chipSelectPin, OUTPUT);
@@ -199,9 +203,6 @@ void enter_programming_mode() {
   
   // start the SPI library:
   SPI.begin();
-
-  // reset target
-  digitalWrite(targetResetPin, HIGH);
 
 
   delay(1000);
@@ -218,11 +219,14 @@ void exit_programming_mode() {
   
   SPI.end();
 
-  // get target out if reset
-  digitalWrite(targetResetPin, LOW);
-  
-  // leave slave select pin alone: input with pull up
+  // We're about to take the target out of reset
+  // so configure SPI pins as input
+  pinMode(MOSI, INPUT);
+  pinMode(SCK, INPUT);
   pinMode(chipSelectPin, INPUT);
+
+  // get target out of reset
+  digitalWrite(targetResetPin, LOW);
 }
 
 void lp_isp_read(byte opcode, byte addr_hi, byte addr_lo, int bytesToRead ) {
