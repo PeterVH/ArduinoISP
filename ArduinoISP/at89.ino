@@ -2,7 +2,7 @@
 // I have not found an official list of device codes for the at89lp mcus.
 // The code below is picked arbitrarilly in the at89 range.
 // This is ok as long as it matches the value in avrdude.conf
-const byte DEVICE_CODE_AT89LP51  0xF1
+const byte DEVICE_CODE_AT89LP51 = 0xF1;
 
 // ISP commands for the at89lp mcu's:
 const byte PREAMBLE = 0xAA;
@@ -29,7 +29,7 @@ byte at89_isp_read(byte opcode, byte addr_hi, byte addr_lo, int bytesToRead ) {
   int i;
 
   // take the slave select low to select the device:
-  digitalWrite(SS, LOW);
+  digitalWrite(PIN_SS, LOW);
   
   delay(10);
 
@@ -54,7 +54,7 @@ byte at89_isp_read(byte opcode, byte addr_hi, byte addr_lo, int bytesToRead ) {
   }
 
   // take the slave select high to de-select:
-  digitalWrite(SS, HIGH);
+  digitalWrite(PIN_SS, HIGH);
 
   return reply;
 }
@@ -65,7 +65,7 @@ void at89_isp_write(byte opcode, byte addr_hi, byte addr_lo,
   int i;
 
   // take the slave select low to select the device:
-  digitalWrite(SS, LOW);
+  digitalWrite(PIN_SS, LOW);
   
   delay(10);
 
@@ -87,7 +87,7 @@ void at89_isp_write(byte opcode, byte addr_hi, byte addr_lo,
   }
 
   // take the slave select high to de-select:
-  digitalWrite(SS, HIGH);
+  digitalWrite(PIN_SS, HIGH);
 }
 
 void at89_start_pmode() {
@@ -96,20 +96,35 @@ void at89_start_pmode() {
   
   // keep slave select high,  
   // it will be pulled low during each spi transfer 
-  pinMode(SS, OUTPUT);
-  digitalWrite(SS, HIGH);
+  digitalWrite(PIN_SS, HIGH);
+  pinMode(PIN_SS, OUTPUT);
   
   // start the SPI library:
   SPI.begin();
 
   // reset target
-  digitalWrite(RESET_LP, HIGH);
+  digitalWrite(RESET, HIGH);
+  pinMode(RESET, OUTPUT);
 
   delay(1000);
 
   at89_isp_read(PROGRAM_ENABLE, PROGRAM_ENABLE_ADDR_HI, 0, 0); 
 
   pmode = 1;  
+}
+
+void at89_end_pmode() {
+  SPI.end();
+  
+  // We're about to take the target out of reset
+  // so configure SPI pins as input
+  pinMode(MOSI, INPUT);
+  pinMode(SCK, INPUT);
+  pinMode(PIN_SS, INPUT);
+
+  digitalWrite(RESET, LOW);
+
+  pmode = 0;
 }
 
 void at89_universal() {  

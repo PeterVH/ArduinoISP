@@ -10,6 +10,21 @@ void avr_start_pmode() {
   pmode = 1;
 }
 
+void avr_end_pmode() {
+  SPI.end();
+  
+  // We're about to take the target out of reset
+  // so configure SPI pins as input
+  pinMode(MOSI, INPUT);
+  pinMode(SCK, INPUT);
+  pinMode(PIN_SS, INPUT);
+
+  digitalWrite(RESET, HIGH);
+
+  pinMode(RESET, INPUT_PULLUP);
+  pmode = 0;
+}
+
 void avr_universal() {
   int w;
   uint8_t ch;

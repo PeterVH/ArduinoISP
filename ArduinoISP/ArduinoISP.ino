@@ -6,11 +6,12 @@
 // This sketch turns the Arduino into a AVRISP
 // using the following arduino pins:
 //
-// pin name:    not-mega:         mega(1280 and 2560)
-// slave reset: 10:               53 
-// MOSI:        11:               51 
-// MISO:        12:               50 
-// SCK:         13:               52 
+// pin name:
+// RESET  10
+// PIN_SS  6
+// MOSI
+// MISO
+// SCK
 //
 // Put an LED (with resistor) on the following pins:
 // 9: Heartbeat   - shows the programmer is running
@@ -50,18 +51,18 @@
 #define SANGUINO
 #endif
 
-#define RESET     SS
+#define PIN_SS     6
 
 #ifndef SANGUINO
-#define LED_HB    9
-#define LED_ERR   8
-#define LED_PMODE 7
-#define RESET_LP  6
+#define LED_HB     9
+#define LED_ERR    8
+#define LED_PMODE  7
+#define RESET     10
 #else
 #define LED_HB     3
 #define LED_ERR   23
 #define LED_PMODE 22
-#define RESET_LP   1
+#define RESET      1
 #endif
 
 #define PROG_FLICKER true
@@ -99,6 +100,7 @@ void pulse(int pin, int times);
 // Function pointers, will be set to either an implementation for
 // avr or one for at89:
 void (*start_pmode) (void);
+void (*end_pmode) (void);
 void (*universal) (void);
 char (*flash_read_page) (int);
 uint8_t (*write_flash_pages)(int);
@@ -119,8 +121,8 @@ void setup() {
   pinMode(LED_HB, OUTPUT);
   pulse(LED_HB, 2);
   
-  pinMode(RESET_LP, OUTPUT);
-  digitalWrite(RESET_LP, LOW);
+  // leave target alone for now 
+  pinMode(RESET, INPUT);
   
   TRACE_BEGIN(57600);
 }
@@ -289,6 +291,7 @@ void set_parameters() {
 
   if(param.devicecode < 0xE0) {
     start_pmode = avr_start_pmode;
+    end_pmode = avr_end_pmode;
     universal = avr_universal;
     flash_read_page = avr_flash_read_page;
     write_flash_pages = avr_write_flash_pages;
@@ -297,6 +300,7 @@ void set_parameters() {
     write_eeprom_chunk = avr_write_eeprom_chunk;
   } else {
     start_pmode = at89_start_pmode;
+    end_pmode = at89_end_pmode;
     universal = at89_universal;
     flash_read_page = at89_flash_read_page;
     write_flash_pages = at89_write_flash_pages;
@@ -306,12 +310,6 @@ void set_parameters() {
   }
 }
 
-void end_pmode() {
-  SPI.end();
-  digitalWrite(RESET, HIGH);
-  pinMode(RESET, INPUT);
-  pmode = 0;
-}
 
 //#define _current_page(x) (here & 0xFFFFE0)
 int current_page(int addr) {
