@@ -157,13 +157,16 @@ parameter param;
 uint8_t hbval=128;
 int8_t hbdelta=8;
 void heartbeat() {
+  static unsigned long last_time = 0;
+  unsigned long now = millis();
+  if ((now - last_time) < 40)
+    return;
+  last_time = now;
   if (hbval > 192) hbdelta = -hbdelta;
   if (hbval < 32) hbdelta = -hbdelta;
   hbval += hbdelta;
   analogWrite(LED_HB, hbval);
-  delay(40);
 }
-
 
 void loop(void) {
   // is pmode active?
