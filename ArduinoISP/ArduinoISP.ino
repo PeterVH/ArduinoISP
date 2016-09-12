@@ -109,7 +109,7 @@ uint8_t (*write_eeprom_chunk)(int start, int length);
 char (*eeprom_read_page)(int length);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(19200);
   SPI.setDataMode(0);
   SPI.setBitOrder(MSBFIRST);
   // Clock Div can be 2,4,8,16,32,64, or 128
@@ -124,7 +124,7 @@ void setup() {
   // leave target alone for now 
   pinMode(RESET, INPUT);
   
-  TRACE_BEGIN(57600);
+  TRACE_BEGIN(115200);
 }
 
 int error=0;
